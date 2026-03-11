@@ -1,0 +1,27 @@
+name: Weekly Paper Newsletter
+
+on:
+  schedule:
+    # 매주 월요일 UTC 08:00 (KST 17:00)
+    - cron: "0 8 * * 1"
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install .
+
+      - name: Run newsletter
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python -m src.main
