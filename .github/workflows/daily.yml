@@ -4,7 +4,11 @@ on:
   schedule:
     # 평일 KST 08:00 (일~목 UTC 23:00)
     - cron: "0 23 * * 0-4"
-  workflow_dispatch: # 수동 실행 가능
+  workflow_dispatch:
+    inputs:
+      days_back:
+        description: "Override days_back (default: auto)"
+        required: false
 
 jobs:
   newsletter:
@@ -24,4 +28,5 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DAYS_BACK: ${{ github.event.inputs.days_back || '' }}
         run: python -m src.main

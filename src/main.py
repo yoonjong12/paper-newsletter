@@ -18,7 +18,7 @@ def main() -> None:
     now = datetime.now(timezone(timedelta(hours=9)))  # KST
     date_str = now.strftime("%Y-%m-%d")
     weekday = now.weekday()  # 0=Monday
-    days_back = 3 if weekday == 0 else 1
+    days_back = int(os.environ.get("DAYS_BACK", 3 if weekday == 0 else 1))
 
     print(f"[{date_str}] Fetching recent papers from arXiv ({days_back} days)...")
 
