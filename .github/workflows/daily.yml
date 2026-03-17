@@ -28,5 +28,5 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          DAYS_BACK: ${{ github.event.inputs.days_back || '' }}
+          DAYS_BACK: ${{ github.event.inputs.days_back }}
         run: python -m src.main
