@@ -1,8 +1,8 @@
-"""Paper newsletter orchestrator — weekly digest."""
+"""Paper newsletter orchestrator — daily weekday digest."""
 
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from src.arxiv_client import fetch_recent_papers
 from src.relevance_filter import score_papers, filter_relevant, group_by_category
@@ -15,10 +15,14 @@ def main() -> None:
     s2_key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY")
     slack_url = os.environ["SLACK_WEBHOOK_URL"]
 
-    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    print(f"[{date_str}] Fetching recent papers from arXiv (7 days)...")
+    now = datetime.now(timezone(timedelta(hours=9)))  # KST
+    date_str = now.strftime("%Y-%m-%d")
+    weekday = now.weekday()  # 0=Monday
+    days_back = 3 if weekday == 0 else 1
 
-    papers = fetch_recent_papers(days_back=7)
+    print(f"[{date_str}] Fetching recent papers from arXiv ({days_back} days)...")
+
+    papers = fetch_recent_papers(days_back=days_back)
     print(f"  Found {len(papers)} keyword-matched papers")
 
     if not papers:

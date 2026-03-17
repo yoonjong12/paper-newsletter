@@ -1,9 +1,9 @@
-name: Weekly Paper Newsletter
+name: Daily Paper Newsletter
 
 on:
   schedule:
-    # 매주 월요일 UTC 08:00 (KST 17:00)
-    - cron: "0 8 * * 1"
+    # 평일 KST 08:00 (일~목 UTC 23:00)
+    - cron: "0 23 * * 0-4"
   workflow_dispatch: # 수동 실행 가능
 
 jobs:
