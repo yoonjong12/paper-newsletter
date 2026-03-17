@@ -1,18 +1,54 @@
 # Paper Newsletter
 
-Automated weekly digest of LLM agent papers: arXiv → Gemini relevance scoring → Semantic Scholar enrichment → Slack.
+Daily digest of LLM agent papers from arXiv, scored by Gemini, enriched with Semantic Scholar, delivered to Slack.
 
-## How it works
+## Quick Start
+
+Install the plugin in [Claude Code](https://claude.ai/code):
+
+```
+/plugin marketplace add yoonjong12/paper-newsletter
+/plugin install paper-newsletter@paper-newsletter-marketplace
+```
+
+Then run:
+
+```
+/paper-newsletter:install
+```
+
+The agent handles everything — environment, API keys, GitHub Actions, and your first test delivery.
+
+## API Keys
+
+| Key | Required | Where to get it |
+|-----|----------|----------------|
+| Gemini API Key | Yes | [Google AI Studio](https://aistudio.google.com/apikeys) |
+| Slack Webhook URL | Yes | [Slack Apps](https://api.slack.com/apps) → Incoming Webhooks |
+| Semantic Scholar API Key | Optional | [S2 API](https://www.semanticscholar.org/product/api#api-key) |
+
+> Semantic Scholar key improves rate limits but is not required. The newsletter works without it.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/paper-newsletter:install` | Setup environment, keys, and first delivery |
+| `/paper-newsletter:send` | Send newsletter now |
+| `/paper-newsletter:schedule` | Change delivery frequency and time |
+| `/paper-newsletter:customize` | Change topics, keywords, and categories |
+
+## How It Works
 
 1. **Fetch** — Pulls recent papers from arXiv (`cs.AI`, `cs.CL`, `cs.MA`) with keyword pre-filtering
-2. **Score** — Gemini Flash scores each paper (1-10) against your research interest profile
+2. **Score** — Gemini Flash rates each paper (1-10) against your research interest profile
 3. **Enrich** — Semantic Scholar adds citation counts, TLDR summaries, and related papers
-4. **Deliver** — Sends categorized digest to Slack (one message per section)
+4. **Deliver** — Sends categorized digest to Slack
 
-### Categories
+## Default Categories
 
-| Section | Emoji |
-|---------|-------|
+| Section | |
+|---------|---|
 | Memory | 🧠 |
 | Optimization | ⚡ |
 | Reasoning | 🔗 |
@@ -20,60 +56,4 @@ Automated weekly digest of LLM agent papers: arXiv → Gemini relevance scoring 
 | Self-evolving | 🔄 |
 | Orchestration | 🎼 |
 
-## Setup
-
-### Requirements
-
-- Python ≥ 3.11
-- API keys: Gemini (required), Semantic Scholar (optional), Slack Webhook (required)
-
-### Install
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install .
-```
-
-### Configure
-
-Copy `.env.example` to `.env` and fill in your keys:
-
-```bash
-cp .env.example .env
-```
-
-```
-GEMINI_API_KEY=...
-SEMANTIC_SCHOLAR_API_KEY=...
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
-```
-
-### Run
-
-```bash
-source .venv/bin/activate
-export $(grep -v '^#' .env | xargs)
-python -m src.main
-```
-
-## Automation
-
-GitHub Actions workflow runs every Monday at KST 17:00 (UTC 08:00).
-
-Add these secrets to your repo: `GEMINI_API_KEY`, `SEMANTIC_SCHOLAR_API_KEY`, `SLACK_WEBHOOK_URL`.
-
-Manual trigger:
-
-```bash
-gh workflow run daily.yml
-```
-
-## Claude Code Skill
-
-If you use [Claude Code](https://claude.com/claude-code), a skill is available at `.claude/skills/paper-newsletter/`:
-
-- `/paper-newsletter install` — guided setup
-- `/paper-newsletter send` — send now
-- `/paper-newsletter schedule` — change cron schedule
-- `/paper-newsletter customize` — change research topics
+Use `/paper-newsletter:customize` to change these.

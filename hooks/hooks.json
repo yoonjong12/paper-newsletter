@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "The user just edited a file. If it was relevance_filter.py and the CATEGORIES list was changed, remind them to also update SECTION_EMOJI in slack_sender.py and the category descriptions in SCORING_PROMPT. If it was not relevance_filter.py or CATEGORIES was not changed, say nothing."
+          }
+        ]
+      }
+    ]
+  }
+}
