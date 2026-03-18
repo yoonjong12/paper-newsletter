@@ -16,30 +16,19 @@ class ArxivPaper:
     pdf_url: str
 
 
-CATEGORIES = ["cs.AI", "cs.CL", "cs.MA"]
-
-AGENT_KEYWORDS = [
-    "agent",
-    "agentic",
-    "tool use",
-    "tool-use",
-    "function calling",
-    "ReAct",
-    "chain-of-thought",
-    "multi-agent",
-    "LLM agent",
-    "language model agent",
-    "autonomous agent",
-]
-
-
-def fetch_recent_papers(days_back: int = 1, max_per_category: int = 200) -> list[ArxivPaper]:
+def fetch_recent_papers(
+    categories: list[str],
+    keywords: list[str],
+    days_back: int = 1,
+    max_per_category: int = 200,
+) -> list[ArxivPaper]:
     """Fetch papers from the last N days across target categories, pre-filtered by keywords."""
     cutoff = datetime.now(timezone.utc) - timedelta(days=days_back)
     seen_ids: set[str] = set()
     papers: list[ArxivPaper] = []
+    keywords_lower = [kw.lower() for kw in keywords]
 
-    for category in CATEGORIES:
+    for category in categories:
         query = f"cat:{category}"
         search = arxiv.Search(
             query=query,
@@ -60,8 +49,8 @@ def fetch_recent_papers(days_back: int = 1, max_per_category: int = 200) -> list
             title_lower = result.title.lower()
             abstract_lower = result.summary.lower()
             has_keyword = any(
-                kw.lower() in title_lower or kw.lower() in abstract_lower
-                for kw in AGENT_KEYWORDS
+                kw in title_lower or kw in abstract_lower
+                for kw in keywords_lower
             )
             if not has_keyword:
                 continue

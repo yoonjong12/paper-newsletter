@@ -37,22 +37,12 @@ def format_paper_block(paper: ArxivPaper, enrichment: Enrichment, score_reason: 
     return "\n".join(lines)
 
 
-SECTION_EMOJI = {
-    "Memory": "🧠",
-    "Optimization": "⚡",
-    "Reasoning": "🔗",
-    "Benchmarks": "📊",
-    "Self-evolving": "🔄",
-    "Orchestration": "🎼",
-}
-
-
 def build_header_message(date_str: str, total: int, num_categories: int) -> dict:
     """Build the header message."""
     return {"blocks": [
         {
             "type": "header",
-            "text": {"type": "plain_text", "text": f"LLM Agent Papers — {date_str}"},
+            "text": {"type": "plain_text", "text": f"Paper Newsletter — {date_str}"},
         },
         {
             "type": "context",
@@ -63,17 +53,17 @@ def build_header_message(date_str: str, total: int, num_categories: int) -> dict
 
 def build_section_message(
     category: str,
+    emoji: str,
     papers: list[ArxivPaper],
     enrichments: dict[str, Enrichment],
     scores: dict[str, dict],
 ) -> dict:
     """Build one Slack message per category section."""
-    emoji = SECTION_EMOJI.get(category, "📄")
     blocks = [
         {"type": "divider"},
         {
             "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*{emoji} Agent > {category}* ({len(papers)})"},
+            "text": {"type": "mrkdwn", "text": f"*{emoji} {category}* ({len(papers)})"},
         },
     ]
 
@@ -95,21 +85,21 @@ def send_to_slack(
     grouped_papers: dict[str, list[ArxivPaper]],
     enrichments: dict[str, Enrichment],
     scores: dict[str, dict],
+    sections: dict[str, str],
     date_str: str,
 ) -> None:
     """Send newsletter as header + one message per category to stay under Slack's 50-block limit."""
     total = sum(len(papers) for papers in grouped_papers.values())
 
     with httpx.Client(timeout=30) as client:
-        # Header
         header = build_header_message(date_str, total, len(grouped_papers))
         resp = client.post(webhook_url, json=header)
         resp.raise_for_status()
         time.sleep(1)
 
-        # One message per category
         for category, papers in grouped_papers.items():
-            msg = build_section_message(category, papers, enrichments, scores)
+            emoji = sections.get(category, "📄")
+            msg = build_section_message(category, emoji, papers, enrichments, scores)
             resp = client.post(webhook_url, json=msg)
             resp.raise_for_status()
             time.sleep(1)

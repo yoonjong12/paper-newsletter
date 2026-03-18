@@ -1,25 +1,28 @@
 # Send
 
-Send the newsletter immediately, regardless of schedule.
+Send the newsletter immediately.
 
-## Local execution
-
-```bash
-cd <project-root>
-source .venv/bin/activate
-export $(grep -v '^#' .env | xargs)
-python -m src.main
-```
-
-## Via GitHub Actions
+## Find the user's newsletter repo
 
 ```bash
-gh workflow run daily.yml
+gh repo list --json name,description --jq '.[] | select(.name | test("newsletter|paper"))'
 ```
 
-To override the lookback window (e.g., fetch last 7 days):
+If ambiguous, ask the user which repo.
+
+## Trigger
+
 ```bash
-gh workflow run daily.yml -f days_back=7
+gh workflow run daily.yml --repo <user>/<repo>
 ```
 
-Monitor with `gh run list --workflow=daily.yml --limit=3`.
+To override the lookback window:
+```bash
+gh workflow run daily.yml --repo <user>/<repo> -f days_back=7
+```
+
+## Monitor
+
+```bash
+gh run list --repo <user>/<repo> --workflow=daily.yml --limit=3
+```

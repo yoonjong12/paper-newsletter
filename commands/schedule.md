@@ -2,12 +2,10 @@
 
 Change when the newsletter runs.
 
-The schedule is defined in `.github/workflows/daily.yml` in the `cron` field.
-
 ## Interview the user
 
-1. How often? (daily weekdays / specific days / weekly)
-2. What time? (ask in their timezone, convert to UTC)
+1. "얼마나 자주 받고 싶으세요?" (매일 평일 / 특정 요일 / 주 1회)
+2. "몇 시에 받고 싶으세요?" (사용자 타임존으로 묻고, UTC로 변환)
 
 ## Cron format reference
 
@@ -18,15 +16,16 @@ The schedule is defined in `.github/workflows/daily.yml` in the `cron` field.
 | Every Monday KST 17:00 | `0 8 * * 1` | Mon UTC 08:00 |
 | Daily KST 18:00 | `0 9 * * *` | Every day UTC 09:00 |
 
-## Apply the change
+## Apply
 
-Edit `.github/workflows/daily.yml`:
-- Update the `cron` value
-- Update the comment to match
+1. Clone the user's newsletter repo
+2. Update `config.yml` schedule section
+3. Update `.github/workflows/daily.yml` cron value
+4. Commit and push
 
-Also update `days_back` logic in `src/main.py` if frequency changes:
+Also adjust `days_back` in config.yml:
 
-| Frequency | days_back |
-|-----------|-----------|
-| Daily weekdays | Mon=3, Tue-Fri=1 |
-| Weekly | 7 |
+| Frequency | days_back_weekday | days_back_monday |
+|-----------|-------------------|-----------------|
+| Daily weekdays | 1 | 3 |
+| Weekly | 7 | 7 |
