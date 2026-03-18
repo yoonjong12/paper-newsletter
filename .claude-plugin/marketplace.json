@@ -8,7 +8,7 @@
       "name": "paper-newsletter",
       "source": "./",
       "description": "Daily LLM agent paper digest: arXiv → Gemini scoring → Semantic Scholar → Slack",
-      "version": "0.2.0"
+      "version": "0.2.1"
     }
   ]
 }
