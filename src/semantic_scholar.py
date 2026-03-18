@@ -23,6 +23,8 @@ class Enrichment:
     citation_count: int
     tldr: str | None
     influential_citation_count: int
+    affiliations: list[str] = field(default_factory=list)
+    venue: str | None = None
     related_papers: list[RelatedPaper] = field(default_factory=list)
 
 
@@ -50,13 +52,25 @@ def _request_with_backoff(url: str, headers: dict[str, str], method: str = "GET"
         return client.get(url, headers=headers)
 
 
+def _extract_affiliations(authors: list[dict]) -> list[str]:
+    """Extract unique affiliations from first and last (corresponding) author."""
+    seen: set[str] = set()
+    result: list[str] = []
+    for author in (authors[:1] + authors[-1:]):
+        for aff in author.get("affiliations") or []:
+            if aff and aff not in seen:
+                seen.add(aff)
+                result.append(aff)
+    return result
+
+
 def enrich_batch(arxiv_ids: list[str], api_key: str | None = None) -> dict[str, Enrichment]:
     """Batch-enrich papers via S2 POST /paper/batch endpoint, then fetch recommendations in parallel."""
     if not arxiv_ids:
         return {}
 
     headers = _headers(api_key)
-    paper_fields = "paperId,externalIds,citationCount,influentialCitationCount,tldr"
+    paper_fields = "paperId,externalIds,citationCount,influentialCitationCount,tldr,authors,venue"
     batch_url = f"{BASE_URL}/paper/batch?fields={paper_fields}"
 
     s2_ids = [f"ArXiv:{aid}" for aid in arxiv_ids]
@@ -81,10 +95,15 @@ def enrich_batch(arxiv_ids: list[str], api_key: str | None = None) -> dict[str, 
         if data.get("tldr"):
             tldr_text = data["tldr"].get("text")
 
+        affiliations = _extract_affiliations(data.get("authors", []))
+        venue = data.get("venue") or None
+
         enrichments[arxiv_id] = Enrichment(
             citation_count=data.get("citationCount", 0),
             tldr=tldr_text,
             influential_citation_count=data.get("influentialCitationCount", 0),
+            affiliations=affiliations,
+            venue=venue,
         )
 
         s2_paper_id = data.get("paperId", "")

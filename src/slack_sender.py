@@ -10,14 +10,17 @@ from src.semantic_scholar import Enrichment
 
 def format_paper_block(paper: ArxivPaper, enrichment: Enrichment, score_reason: str) -> str:
     """Format a single paper into a Slack mrkdwn block."""
-    authors_str = ", ".join(paper.authors[:3])
-    if len(paper.authors) > 3:
-        authors_str += f" +{len(paper.authors) - 3}"
+    meta_parts: list[str] = []
+    if enrichment.affiliations:
+        meta_parts.append(", ".join(enrichment.affiliations))
+    if enrichment.venue:
+        meta_parts.append(enrichment.venue)
 
     lines = [
         f"*<{paper.pdf_url}|{paper.title}>*",
-        f"_{authors_str}_ | Citations: {enrichment.citation_count}",
     ]
+    if meta_parts:
+        lines.append(f"_{' | '.join(meta_parts)}_")
 
     if enrichment.tldr:
         lines.append(f"TLDR: {enrichment.tldr}")
@@ -29,9 +32,7 @@ def format_paper_block(paper: ArxivPaper, enrichment: Enrichment, score_reason: 
         lines.append("Related papers:")
         for rp in enrichment.related_papers:
             year_str = f" ({rp.year})" if rp.year else ""
-            lines.append(
-                f"  • <{rp.url}|{rp.title}>{year_str} — {rp.citation_count} citations"
-            )
+            lines.append(f"  • <{rp.url}|{rp.title}>{year_str}")
 
     return "\n".join(lines)
 
