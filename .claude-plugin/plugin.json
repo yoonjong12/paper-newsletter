@@ -1,7 +1,7 @@
 {
   "name": "paper-newsletter",
-  "description": "Daily LLM agent paper digest: arXiv → Gemini scoring → Semantic Scholar → Slack",
-  "version": "0.2.2",
+  "description": "Daily LLM agent paper digest: arXiv → Gemini scoring → Gmail",
+  "version": "0.2.3",
   "author": {
     "name": "yoonjong12"
   }
