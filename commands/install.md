@@ -80,8 +80,8 @@ jobs:
       - run: paper-newsletter --config config.yml
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           DAYS_BACK: ${{ github.event.inputs.days_back }}
 ```
 
@@ -95,7 +95,7 @@ The user must NEVER leave the chat to run commands manually.
 Ask via AskUserQuestion: "API 키가 담긴 .env 파일 경로를 알려주세요. 없으면 직접 입력할게요."
 
 **Option A: .env 파일 경로** (Recommended)
-- Read the file, extract GEMINI_API_KEY, SLACK_WEBHOOK_URL, SEMANTIC_SCHOLAR_API_KEY
+- Read the file, extract GEMINI_API_KEY, EMAIL_TO, GMAIL_APP_PASSWORD
 - Register each non-empty key: `gh secret set <KEY> --repo <user>/<name> --body "<value>"`
 
 **Option B: 직접 입력**
@@ -103,9 +103,8 @@ Ask via AskUserQuestion: "API 키가 담긴 .env 파일 경로를 알려주세�
 
 For missing keys, print where to get them:
 - Gemini: https://aistudio.google.com/apikeys
-- Slack: https://api.slack.com/apps → Incoming Webhooks
-- Semantic Scholar (optional): https://www.semanticscholar.org/product/api#api-key
-  - Skip if empty (rate limit만 느려짐, 동작에는 문제 없음)
+- Gmail App Password: Google 계정 > 보안 > 2단계 인증 > 앱 비밀번호
+- EMAIL_TO: 뉴스레터를 받을 Gmail 주소
 
 ## Step 6: Test run
 
