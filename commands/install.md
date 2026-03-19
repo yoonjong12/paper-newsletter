@@ -76,8 +76,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install git+https://github.com/yoonjong12/paper-newsletter.git@v<VERSION>
-# <VERSION>: read from pyproject.toml `version` field at install time
+      - run: pip install git+https://github.com/yoonjong12/paper-newsletter.git@main
       - run: paper-newsletter --config config.yml
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -90,27 +89,23 @@ jobs:
 git add -A && git commit -m "Initial newsletter setup" && git push -u origin main
 ```
 
-## Step 5: API Keys (interactive via gh CLI)
+## Step 5: API Keys (automated — user stays in chat)
 
-Guide the user to register secrets one at a time using `gh secret set` with interactive stdin.
-Do NOT pass secrets via `--body` (avoids shell history exposure).
+The user must NEVER leave the chat to run commands manually.
+Ask via AskUserQuestion: "API 키가 담긴 .env 파일 경로를 알려주세요. 없으면 직접 입력할게요."
 
-```bash
-gh secret set GEMINI_API_KEY --repo <user>/<name>
-# (user pastes key into stdin prompt)
+**Option A: .env 파일 경로** (Recommended)
+- Read the file, extract GEMINI_API_KEY, SLACK_WEBHOOK_URL, SEMANTIC_SCHOLAR_API_KEY
+- Register each non-empty key: `gh secret set <KEY> --repo <user>/<name> --body "<value>"`
 
-gh secret set SLACK_WEBHOOK_URL --repo <user>/<name>
-# (user pastes URL into stdin prompt)
-```
+**Option B: 직접 입력**
+- AskUserQuestion으로 각 키를 받아서 동일하게 `--body`로 등록
 
-Then ask: "Semantic Scholar API Key가 있나요?"
-- Yes → `gh secret set SEMANTIC_SCHOLAR_API_KEY --repo <user>/<name>`
-- No → skip (rate limit만 느려짐, 동작에는 문제 없음)
-
-Print a link for each key so the user can get it:
+For missing keys, print where to get them:
 - Gemini: https://aistudio.google.com/apikeys
 - Slack: https://api.slack.com/apps → Incoming Webhooks
-- Semantic Scholar: https://www.semanticscholar.org/product/api#api-key
+- Semantic Scholar (optional): https://www.semanticscholar.org/product/api#api-key
+  - Skip if empty (rate limit만 느려짐, 동작에는 문제 없음)
 
 ## Step 6: Test run
 
