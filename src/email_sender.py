@@ -3,15 +3,21 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from html import escape
 
 from src.arxiv_client import ArxivPaper
 
 
 def _format_paper_html(paper: ArxivPaper, reason: str) -> str:
+    title = escape(paper.title)
+    authors = escape(", ".join(paper.authors[:3]))
+    if len(paper.authors) > 3:
+        authors += f" +{len(paper.authors) - 3}"
     return (
         f'<li style="margin-bottom:12px;">'
-        f'<a href="{paper.pdf_url}" style="font-weight:bold;color:#1a0dab;">{paper.title}</a><br>'
-        f'<span style="color:#666;font-size:0.9em;">Relevance: {reason}</span>'
+        f'<a href="{paper.pdf_url}" style="font-weight:bold;color:#1a0dab;">{title}</a><br>'
+        f'<span style="color:#555;font-size:0.85em;">{authors}</span><br>'
+        f'<span style="color:#666;font-size:0.9em;">Relevance: {escape(reason)}</span>'
         f'</li>'
     )
 
