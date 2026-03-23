@@ -2,6 +2,8 @@
 
 Interactive setup guide for a daily research paper digest via Claude Cloud Scheduled Task.
 
+Papers are discovered via WebSearch, scored by Claude, and delivered to Slack.
+
 ## Quick Start
 
 ```
@@ -23,5 +25,5 @@ The assistant walks you through:
 ## Requirements
 
 - Claude Pro/Max/Team/Enterprise plan
-- Gmail account with App Password
+- Slack connector enabled at claude.ai/settings/connectors
 - Access to claude.ai/code/scheduled
