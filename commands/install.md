@@ -1,117 +1,99 @@
 # Install
 
-Set up a personal paper newsletter with GitHub Actions. Handle everything for the user.
-Automate all scripted steps silently. Only ask questions that require the user's creative input.
+Set up a daily paper newsletter as a Claude Cloud Scheduled Task.
+No GitHub repo, no Python, no external LLM API needed — Claude does everything.
 
-## Step 1: Prerequisites
+## Step 1: Interview (AskUserQuestion)
 
-Verify silently (do NOT ask the user):
-- `gh auth status` — must be logged in
-- `gh` CLI available
+Ask one at a time:
 
-If not met, print what's missing and stop.
-
-## Step 2: Interview (AskUserQuestion)
-
-Only these 3 questions require human input. Ask one at a time:
-
-1. "어떤 연구 분야에 관심이 있나요? 자유롭게 설명해주세요."
-2. "논문을 어떤 섹션으로 나눌까요?" (suggest examples with emoji based on Q1 answer)
+1. "What research areas are you interested in? Describe freely."
+2. "How would you like papers grouped into sections?" (suggest examples with emoji based on Q1 answer)
 3. Review & confirm: infer arXiv categories + keywords from Q1-Q2, present them, let user adjust
+4. "What email address should the newsletter be sent to?"
+5. "How often and when do you want it?" (default: weekdays 08:00 KST)
 
-Optional (ask only after Q3):
-4. "GitHub 레포 이름을 정해주세요." (default: my-paper-newsletter)
+## Step 2: Email credentials
 
-## Step 3: Generate config.yml
+AskUserQuestion: "Gmail App Password is required for sending. Choose one:
+1. Provide a .env file path (containing EMAIL_TO and GMAIL_APP_PASSWORD)
+2. Enter values directly"
 
-From the user's answers, build a config.yml:
+**Option A: .env file path**
+- Read the file, extract EMAIL_TO and GMAIL_APP_PASSWORD
 
-```yaml
-arxiv:
-  categories: [...]   # infer from their research area
-  keywords: [...]      # infer from interests, confirmed in Q3
-
-scoring:
-  interests: |
-    # Structure the user's free-text answer into ranked interests
-  threshold: 8
-
-newsletter:
-  sections:
-    SectionName: "emoji"
-
-schedule:
-  cron: "0 23 * * 0-4"
-  days_back_weekday: 1
-  days_back_monday: 3
-```
-
-## Step 4: Create repo, push, and register secrets
-
-Run all of these automatically:
-
-```bash
-gh repo create <name> --private --clone
-cd <name>
-```
-
-Write config.yml and .github/workflows/daily.yml into the repo.
-
-The workflow template:
-```yaml
-name: Paper Newsletter
-on:
-  schedule:
-    - cron: "<from config>"
-  workflow_dispatch:
-    inputs:
-      days_back:
-        description: "Override days_back"
-        required: false
-jobs:
-  newsletter:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install git+https://github.com/yoonjong12/paper-newsletter.git@main
-      - run: paper-newsletter --config config.yml
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          DAYS_BACK: ${{ github.event.inputs.days_back }}
-```
-
-```bash
-git add -A && git commit -m "Initial newsletter setup" && git push -u origin main
-```
-
-## Step 5: API Keys (automated — user stays in chat)
-
-The user must NEVER leave the chat to run commands manually.
-Ask via AskUserQuestion: "API 키가 담긴 .env 파일 경로를 알려주세요. 없으면 직접 입력할게요."
-
-**Option A: .env 파일 경로** (Recommended)
-- Read the file, extract GEMINI_API_KEY, EMAIL_TO, GMAIL_APP_PASSWORD
-- Register each non-empty key: `gh secret set <KEY> --repo <user>/<name> --body "<value>"`
-
-**Option B: 직접 입력**
-- AskUserQuestion으로 각 키를 받아서 동일하게 `--body`로 등록
+**Option B: Direct input**
+- Ask for each value via AskUserQuestion
 
 For missing keys, print where to get them:
-- Gemini: https://aistudio.google.com/apikeys
-- Gmail App Password: Google 계정 > 보안 > 2단계 인증 > 앱 비밀번호
-- EMAIL_TO: 뉴스레터를 받을 Gmail 주소
+- Gmail App Password: Google Account > Security > 2-Step Verification > App Passwords
 
-## Step 6: Test run
+## Step 3: Create Cloud Scheduled Task
 
-```bash
-gh workflow run daily.yml --repo <user>/<name>
+Use CronCreate to register the scheduled task with the following prompt template.
+Convert the user's preferred frequency/time to a cron expression (KST to local timezone).
+
+### Prompt template
+
+Fill in {placeholders} from interview answers:
+
+```
+You are a research paper newsletter agent.
+
+## Interests
+{scoring_interests — structure user's free-text into ranked priorities}
+
+## arXiv Categories
+{categories — e.g. cs.AI, cs.CL, cs.MA, cs.LG, cs.SE}
+
+## Keywords
+{keywords — comma separated}
+
+## Sections
+{sections — e.g. Memory 🧠, Reasoning 🔗, Orchestration 🎼}
+
+## Email Settings
+- To: {email_to}
+- Gmail App Password: {app_password}
+
+## Procedure
+
+1. Fetch recent papers from arXiv (1 day on weekdays, 3 days on Monday).
+   URL: http://export.arxiv.org/api/query?search_query=cat:{cat1}+OR+cat:{cat2}+...&sortBy=submittedDate&start=0&max_results=100
+   Use WebFetch to call the API and parse the Atom XML response.
+
+2. Pre-filter candidates by matching [Keywords] against title + abstract.
+
+3. Score each candidate against [Interests] on a 0-10 scale. Keep only papers scoring 8 or above.
+
+4. Enrich selected papers via Semantic Scholar API.
+   URL: https://api.semanticscholar.org/graph/v1/paper/arXiv:{arxiv_id}?fields=authors,venue,tldr,externalIds
+   Use WebFetch to call the API.
+
+5. Group papers into [Sections].
+
+6. Format the newsletter:
+
+📰 Daily Paper Digest — {date}
+
+{emoji} {section_name}
+• **{title}** — {authors} ({institution})
+  {one_line_summary}
+  🔗 {arxiv_url}
+
+7. Send via Gmail SMTP:
+   - SMTP server: smtp.gmail.com:465 (SSL)
+   - From/To: {email_to}
+   - Auth: {email_to} / {app_password}
+   - Subject: "📰 Daily Paper Digest — {date}"
+   - Body: newsletter content above (HTML format)
+
+If zero papers pass the threshold, do not send an email.
 ```
 
-Monitor: `gh run list --repo <user>/<name> --limit 1`
+## Step 4: Verify
 
-Tell the user: "설정 완료. 내일 아침부터 뉴스레터가 도착합니다."
+Tell the user:
+- "Cloud Scheduled Task created successfully."
+- "Visit claude.ai/code/scheduled to view it and use 'Run now' to test."
+- "To change frequency or interests, edit the task prompt directly at claude.ai/code/scheduled."

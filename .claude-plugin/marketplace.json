@@ -7,7 +7,7 @@
     {
       "name": "paper-newsletter",
       "source": "./",
-      "description": "Daily LLM agent paper digest: arXiv → Gemini scoring → Semantic Scholar → Slack"
+      "description": "Daily LLM agent paper digest via Claude Cloud Schedule: arXiv → Claude scoring → Email"
     }
   ]
 }

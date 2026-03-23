@@ -1,7 +1,7 @@
 {
   "name": "paper-newsletter",
-  "description": "Daily LLM agent paper digest: arXiv → Gemini scoring → Gmail",
-  "version": "0.2.3",
+  "description": "Daily LLM agent paper digest via Claude Cloud Schedule: arXiv → Claude scoring → Email",
+  "version": "1.0.0",
   "author": {
     "name": "yoonjong12"
   }
