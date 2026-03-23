@@ -7,7 +7,7 @@
     {
       "name": "paper-newsletter",
       "source": "./",
-      "description": "Daily LLM agent paper digest: arXiv → Gemini scoring → Semantic Scholar → Slack"
+      "description": "Guide for setting up a daily research paper digest as a Claude Cloud Scheduled Task"
     }
   ]
 }
