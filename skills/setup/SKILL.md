@@ -10,30 +10,33 @@ allowed-tools: ["AskUserQuestion"]
 
 Guide the user step-by-step through creating a Claude Cloud Scheduled Task that delivers a daily research paper digest to Slack.
 
-You are a setup assistant. You do NOT create the task yourself — you walk the user through creating it at claude.ai/code/scheduled.
+You are a setup assistant. You do NOT create the task yourself — you walk the user through creating it at claude.ai/code/scheduled. After each instruction, ask "Done?" before moving to the next.
 
-## Prerequisites
+## Step 1: Slack Connector Setup
 
-Before starting, the user must have:
+Walk the user through connecting Slack to claude.ai. One step at a time, confirm each.
 
-- Slack connector enabled at claude.ai/settings/connectors
-- Slack "메시지 보내기" (Send message) permission set to "항상 허용" (Always allow)
-- A Slack channel for the digest (e.g. #paper-digest)
+1. "Go to claude.ai/settings/connectors. Do you see Slack in the list?"
+   - If not connected: "Click Slack and follow the OAuth flow to connect your workspace."
+2. "Click on Slack connector settings. Under 'Write/Delete tools' (Write/Delete tools), change 'Send message' (Send message) from 'Requires approval' to 'Always allow' (Always allow)."
 
-If any prerequisite is missing, guide the user to set it up before continuing.
+## Step 2: Slack Channel Setup
 
-## Flow
+1. "Which Slack channel do you want the digest posted to? If you don't have one yet, create a channel (e.g. #paper-digest) in Slack."
+2. "If the channel is private, you must invite the Claude app: type `/invite @Claude` in the channel. Without this, the scheduled task cannot find or post to the channel."
+3. "Get the channel ID: click the channel name in Slack → scroll to the bottom of the popup → copy the Channel ID (e.g. C0AN9GTUCG4)."
 
-### Step 1: Interview
+Ask the user for the channel ID via AskUserQuestion.
 
-Collect the user's preferences via AskUserQuestion. Ask one at a time:
+## Step 3: Interview
+
+Collect the user's research preferences via AskUserQuestion. Ask one at a time:
 
 1. "What is your core research interest? Describe in one phrase." (e.g. "AI Agent systems")
 2. "What sub-topics should papers be classified into?" Suggest sections with emoji based on Q1. (e.g. Memory 🧠, Reasoning 🔗, Orchestration 🎼)
 3. Infer search keywords from Q1-Q2. Present them and let the user adjust.
-4. "What is the Slack channel ID for the digest?" (explain: click channel name in Slack → channel ID at the bottom, e.g. C0AN9GTUCG4)
 
-### Step 2: Generate prompt
+## Step 4: Generate prompt
 
 From the interview answers, build the complete task prompt. Use this template:
 
@@ -74,29 +77,38 @@ You are a research paper newsletter agent.
   {one_line_summary}
   <{arxiv_url}|arxiv link>
 
-6. Send the message to Slack channel ID {channel_id} using the Slack connector's "메시지 보내기" tool.
+6. Send the message to Slack channel ID {channel_id} using the Slack connector's "Send message" tool.
 
 If zero papers pass the threshold, send: "📰 No relevant papers found today."
 ```
 
 Output the filled prompt in a code block so the user can copy it.
 
-### Step 3: Walk through Cloud Schedule registration
+## Step 5: Cloud Schedule Registration
 
-Guide the user through claude.ai/code/scheduled, one field at a time. After each instruction, ask "Done?" before moving to the next.
+Guide the user through claude.ai/code/scheduled, one field at a time.
 
 1. "Go to claude.ai/code/scheduled and click '+ New task'."
 2. "Set the **Name** to: `Daily Paper Digest`"
 3. "Paste the prompt I generated above into the **Description** field."
 4. "Under **Repository**, leave as Default."
 5. "Set **Frequency** to: Weekdays"
-6. "Set **Time** to: 오전 08:00 (or your preferred time)"
-7. "Under **Connectors**, make sure **Slack** is included. Remove any others not needed."
+6. "Set **Time** to: 08:00 AM (or your preferred time)"
+7. "Under **Connectors**, click 'Add connector' and add **Slack**. Remove any others not needed."
 8. "Click **Create** to save."
 
-### Step 4: Done
+## Step 6: Test
+
+1. "Click 'Run now' on the task page to test."
+2. "Check your Slack channel — the digest should appear within a few minutes."
+3. If the message does not appear, troubleshoot:
+   - Verify Slack connector is connected at claude.ai/settings/connectors
+   - Verify "Send message" is set to "Always allow"
+   - For private channels: verify Claude app was invited (`/invite @Claude`)
+   - Verify the channel ID is correct
+
+## Step 7: Done
 
 Tell the user:
 - "Setup complete. The task will run on weekdays at your chosen time."
-- "To test now, click 'Run now' on the task page."
 - "To change interests or schedule, edit the task directly at claude.ai/code/scheduled."
