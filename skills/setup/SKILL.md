@@ -54,13 +54,18 @@ You are a research paper newsletter agent.
 
 ## Procedure
 
+0. Determine today's date. Compute the search cutoff date:
+   - If today is Monday: cutoff = 3 days ago (to cover the weekend)
+   - Otherwise: cutoff = yesterday
+   Format the cutoff as YYYY-MM-DD.
+
 1. Spawn 3 subagents in parallel to search for papers:
 
-   Agent 1: "Search for recent papers. Run WebSearch: 'arxiv {keyword_group_1} site:arxiv.org 2026'. For each result, extract: title, authors, abstract, arxiv URL. Return a list."
+   Agent 1: "Search for recent papers. Run WebSearch: 'arxiv {keyword_group_1} site:arxiv.org after:<cutoff_date>'. For each result, extract: title, authors, abstract, arxiv URL. Return a list."
 
-   Agent 2: "Search for recent papers. Run WebSearch: 'arxiv {keyword_group_2} site:arxiv.org 2026'. For each result, extract: title, authors, abstract, arxiv URL. Return a list."
+   Agent 2: "Search for recent papers. Run WebSearch: 'arxiv {keyword_group_2} site:arxiv.org after:<cutoff_date>'. For each result, extract: title, authors, abstract, arxiv URL. Return a list."
 
-   Agent 3: "Search for recent papers. Run WebSearch: 'arxiv {keyword_group_3} site:arxiv.org 2026'. For each result, extract: title, authors, abstract, arxiv URL. Return a list."
+   Agent 3: "Search for recent papers. Run WebSearch: 'arxiv {keyword_group_3} site:arxiv.org after:<cutoff_date>'. For each result, extract: title, authors, abstract, arxiv URL. Return a list."
 
 2. Merge all results and deduplicate by arxiv URL.
 

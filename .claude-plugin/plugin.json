@@ -1,7 +1,7 @@
 {
   "name": "paper-newsletter",
   "description": "Guide for setting up a daily research paper digest as a Claude Cloud Scheduled Task",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "author": {
     "name": "yoonjong12"
   }
